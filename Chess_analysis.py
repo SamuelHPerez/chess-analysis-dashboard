@@ -69,7 +69,7 @@ if 'playground_board' not in st.session_state: st.session_state.playground_board
 
 # --- SIDEBAR: SELECTOR UNIVERSAL ---
 with st.sidebar:
-    st.markdown("## ♟️ Samuel's Hub")
+    st.markdown("## Hub")
     modo = st.radio("Secciones", ["📈 Dashboard Pro", "📂 Visor PGN", "📅 Chess.com", "🧪 Playground"])
     st.divider()
 
