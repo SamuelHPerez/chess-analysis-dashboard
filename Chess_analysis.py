@@ -53,7 +53,7 @@ def cargar_historial_completo(user, inicio, fin):
                     rival_lado = b if es_blanco else w
                     rows.append({
                         "Fecha": dt, "Dia_Semana": dt.strftime('%A'), "Label": f"{w['username']} vs {b['username']}",
-                        "PGN": g["pgn"], "Color": "Blanco" if es_blanco else "Negro", "Resultado": mi_lado['result'],
+                        "PGN": g["pgn"], "Color": "White" if es_blanco else "Black", "Resultado": mi_lado['result'],
                         "Win_Val": 1 if mi_lado['result'] == 'win' else (
                             0.5 if mi_lado['result'] in ['draw', 'repetition', 'stalemate'] else 0),
                         "Mi_Elo": mi_lado['rating'], "Rival_Elo": rival_lado['rating']
@@ -70,18 +70,18 @@ if 'playground_board' not in st.session_state: st.session_state.playground_board
 # --- SIDEBAR: SELECTOR UNIVERSAL ---
 with st.sidebar:
     st.markdown("## Hub")
-    modo = st.radio("Secciones", ["📈 Dashboard Pro", "📂 Visor PGN", "📅 Chess.com", "🧪 Playground"])
+    modo = st.radio("Sections", ["📈 Dashboard", "📂PGN Visor", "📅Chess.com History", "🧪 Playground"])
     st.divider()
 
     # SELECTOR UNIVERSAL DE COLOR (Perspectiva)
-    st.write("**Perspectiva / Filtro:**")
-    color_global = st.radio("Juego con:", ["Blanco", "Negro"], horizontal=True)
-    orientacion = chess.WHITE if color_global == "Blanco" else chess.BLACK
+    st.write("**Side / Filtro:**")
+    color_global = st.radio("Play with:", ["White", "Black"], horizontal=True)
+    orientacion = chess.WHITE if color_global == "White" else chess.BLACK
 
     st.divider()
-    user_input = st.text_input("Username")
+    user_input = st.text_input("Username", placeholder="MagnusCarlsen")
     hoy = datetime.date.today()
-    rango = st.date_input("Periodo", value=(hoy - datetime.timedelta(days=30), hoy))
+    rango = st.date_input("Period", value=(hoy - datetime.timedelta(days=30), hoy))
 
 
 # --- FUNCION VISOR ACTUALIZADA ---
@@ -130,7 +130,7 @@ def visor_partida(pgn_string, orientacion_manual=None):
 
             # 2. Renderizado limpio
             with st.container():
-                st.caption("VENTAJA: NEGRO | BLANCO")
+                st.caption("ADVANTAGE: Black | White")
                 st.progress(score_normalized)
 
                 col_metrics1, col_metrics2 = st.columns(2)
@@ -156,7 +156,7 @@ def visor_partida(pgn_string, orientacion_manual=None):
 
 # --- MODOS ---
 
-if modo == "📈 Dashboard Pro":
+if modo == "📈 Dashboard":
     st.header(f"Performance Analysis: {user_input}")
     df_raw = cargar_historial_completo(user_input, rango[0], rango[1])
 
@@ -185,18 +185,35 @@ if modo == "📈 Dashboard Pro":
         with col_r:
             fig_res = px.histogram(df, x="Resultado", title=f"Outcomes as {color_global}",
                                    template="plotly_dark",
-                                   color_discrete_sequence=['#bbbbbb' if color_global == "Blanco" else '#404040'])
+                                   color_discrete_sequence=['#bbbbbb' if color_global == "White" else '#404040'])
             st.plotly_chart(fig_res, use_container_width=True)
     else:
         st.info("No data found.")
 
-elif modo == "📂 Visor PGN":
-    txt = st.text_area("Paste PGN:", height=150)
+elif modo == "📂PGN Visor":
+    pgn_ejemplo = """1. e4 c5 2. Nc3 Nc6 3. Nf3 g6 4. h4 $6 h6 $2 5. h5 g5 $1 6. d4 $1 cxd4 7. Nxd4 d6 8.
+Be3 Nf6 9. f3 Bg7 10. Qd2 O-O 11. O-O-O Nxd4 12. Bxd4 Be6 13. Nd5 Bxd5 $6 14.
+exd5 Qc7 15. Kb1 Rac8 16. c3 $2 Qa5 $1 17. Qe1 $2 Rfe8 $6 18. Bxf6 $2 Bxf6 19. Bd3 $4 Kf8
+$9 20. Qe4 $4 Rxc3 $3 21. Rc1 Rxc1+ 22. Rxc1 Qb6 $1 23. Qe2 Qd4 24. Be4 a6 25. g4 b5 $1
+26. Rc6 a5 $2 27. Qxb5 a4 $2 28. a3 Kg7 29. Ka2 Ra8 30. Rc4 Qf2 31. Rb4 Rc8 32. Qxa4
+Rc1 33. Qb3 $2 Qe1 34. Qd3 Ra1+ $1 35. Kb3 Rd1 $2 36. Qc2 $9 Rd2 $1 37. Qc4 Rxb2+ $2 38.
+Ka4 Rd2 $1 39. Rb8 $4 Rxd5 $9 40. Bxd5 Qe3 41. Rb3 $6 Qa7+ 42. Kb4 e6 43. Bc6 $6 d5
+44. Qb5 $2 Be7+ $9 45. Kc3 Bf6+ $2 46. Kc2 Qf2+ 47. Kc1 $6 Qe1+ 48. Kc2 Qf2+ 49. Kd1 $1
+Qg1+ 50. Kd2 Qf2+ $2 51. Qe2 Qd4+ 52. Qd3 Qc5 53. Kd1 $4 Qxc6 54. Rb1 Qd6 55. Rc1
+Qh2 56. Rc2 Qh1+ 57. Kd2 Qh2+ 58. Kd1 Qf4 59. Ke2 Qd6 60. Kd1 e5 $2 61. Rd2 e4 $6
+62. fxe4 Qb6 $9 63. Qxd5 $9 Qg1+ 64. Ke2 $2 Qe3+ $4 65. Kxe3 Be5 $2 66. Kf3 Bf4 67. Rd4
+Kf8 $6 68. Qf5 Ke7 69. Rd7+ Ke8 70. Qxf7# 1-0"""
+
+    # Cambiamos 'placeholder' por 'value' para que el texto sea editable y real
+    txt = st.text_area("Paste PGN:", value=pgn_ejemplo, height=250)
+
     if txt:
-        if st.session_state.get('l_pgn') != txt: st.session_state.ptr = 0; st.session_state.l_pgn = txt
+        if st.session_state.get('l_pgn') != txt:
+            st.session_state.ptr = 0
+            st.session_state.l_pgn = txt
         visor_partida(txt)
 
-elif modo == "📅 Chess.com":
+elif modo == "📅Chess.com History":
     df_h = cargar_historial_completo(user_input, rango[0], rango[1])
     if not df_h.empty:
         # Filtramos el historial para que coincida con el selector
